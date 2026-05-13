@@ -528,8 +528,10 @@ def executor(retq, task, outq):
             vars = loads(task.vars)
             result = dumps(_function(*args, **vars))
         else:
-            # for testing purpose only
-            result = eval(task.function)(*loads(task.args), **loads(task.vars))
+            raise ValueError(
+                "task.application_name is required; cannot execute task '%s' "
+                "without an app context" % task.function
+            )
         if len(result) >= 1024:
             fd, temp_path = tempfile.mkstemp(suffix=".w2p_sched")
             with os.fdopen(fd, "w") as f:
