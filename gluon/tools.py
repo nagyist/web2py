@@ -2727,6 +2727,9 @@ class Auth(AuthAPI):
         #                 (`https://good.example` matching
         #                 `https://good.example.attacker.com/...`).
         #   callable    - `f(url) -> bool`
+        #
+        # Only https:// service URLs are accepted. http:// would expose the
+        # CAS ticket in plaintext in transit and in proxy/server access logs.
         if not url or not isinstance(url, str):
             return False
         if any(ord(c) < 0x20 or ord(c) == 0x7F for c in url):
@@ -2735,7 +2738,7 @@ class Auth(AuthAPI):
             parsed = urlparse.urlparse(url)
         except ValueError:
             return False
-        if parsed.scheme not in ("http", "https") or not parsed.netloc:
+        if parsed.scheme != "https" or not parsed.netloc:
             return False
         allowed = self.settings.cas_allowed_services
         if allowed is None:

@@ -1950,7 +1950,20 @@ class TestCASServiceAllowlist(unittest.TestCase):
             self.auth._is_allowed_cas_service("https://nope.example/foo")
         )
 
-    def test_rejects_non_http_schemes(self):
+    def test_rejects_non_https_schemes(self):
+        # http:// is rejected even if explicitly listed: tickets would be
+        # exposed in plaintext in transit and in proxy/server access logs.
+        self.auth.settings.cas_allowed_services = [
+            "http://internal.example/",
+            "http://internal.example/app",
+        ]
+        self.assertFalse(
+            self.auth._is_allowed_cas_service("http://internal.example/")
+        )
+        self.assertFalse(
+            self.auth._is_allowed_cas_service("http://internal.example/app")
+        )
+        # Non-http schemes are also rejected.
         self.auth.settings.cas_allowed_services = ["javascript:alert(1)"]
         self.assertFalse(
             self.auth._is_allowed_cas_service("javascript:alert(1)")
